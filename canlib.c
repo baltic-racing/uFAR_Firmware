@@ -49,8 +49,8 @@ void can_cfg(){
 	}
 
 	CANBT1 = 0x00;// Set Baudrate
-	CANBT2 = 0x0C;// 500kBaud according
-	CANBT3 = 0x36;// to Datasheet S. 267
+	CANBT2 = 0x0C;// 1000kBaud according
+	CANBT3 = 0x36;// to Datasheet S. 267 with 16Mhz Oszi
 
 	CANGIE = 0;
 

@@ -26,7 +26,7 @@ void sys_tick(){
 void sys_timer_config(){
 	
 	//8 bit Timer 0 configuration
-	//ctc mode and 64 as prescaler
+	//ctc mode and 64 as prescaler for 8Mhz Quartz, for 16Mhz use 64
 	TCCR0A = 0 | (1<<WGM01) | (1<<CS01) | (1<<CS00);
 	TIMSK0 = 0 | (1<<OCF0A);	//compare interrupt enable
 	OCR0A = 250-1;				// compare value for 1ms;
@@ -34,6 +34,7 @@ void sys_timer_config(){
 }
 
 void fuelpump_CTRL(uint16_t rpm){
+	rpm=1000;
 	if (rpm >= 500)
 	{
 		PORTB = (1<<PB1); //turn on PB1 where the FuelpumpCTRL is connected to to activate the Fuelpump when Engine RPM is high enough
