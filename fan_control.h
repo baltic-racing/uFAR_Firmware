@@ -5,6 +5,8 @@
  *  Author: Konstruktion
  */ 
 
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #ifndef FAN_CONTROL_H_
 #define FAN_CONTROL_H_
@@ -20,6 +22,6 @@
 #define CLT_MAX		105
 #define CLT_MIN		60
 
-void fan_speed_control(uint8_t temperature, uint16_t engine_running);
+void fan_speed_control(uint8_t temperature, uint16_t rpm);
 
 #endif /* FAN_CONTROL_H_ */

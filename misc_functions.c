@@ -18,9 +18,7 @@ void port_config(){
 	DDRF = 0;												//mark analog inputs on Port F as input
 }
 void sys_tick(){
-
 	PORTC ^= 1<<PC2; //toggling the Status of PC2 to make the Heart LED blink every SYStick
-
 }
 
 void sys_timer_config(){
@@ -34,15 +32,14 @@ void sys_timer_config(){
 }
 
 void fuelpump_CTRL(uint16_t rpm){
-	rpm=1000;
-	if (rpm >= 500)
+	if (rpm >= 750)
 	{
-		PORTB = (1<<PB1); //turn on PB1 where the FuelpumpCTRL is connected to to activate the Fuelpump when Engine RPM is high enough
+		PORTB |= (1<<PB1); //turn on PB1 where the FuelpumpCTRL is connected to to activate the Fuelpump when Engine RPM is high enough
 	}
 	else{
-		PORTB = (0<<PB1);
+		PORTB &= ~(1<<PB1);
 	}
-	};
+};
 
 //ISR for Timer 0 compare interrupt
 ISR(TIMER0_COMP_vect){

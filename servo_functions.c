@@ -8,7 +8,6 @@
 #include "servo_functions.h"
 #include "fan_control.h"
 
-volatile uint16_t fan_time = 1800;
 volatile uint8_t servo_active = 0;
 
 //time until the servos get deactivated
@@ -35,7 +34,6 @@ extern unsigned long sys_time;
 volatile unsigned long time_shift_started = 0;
 volatile uint16_t shift_duration_current = 0;
 
-
 //vars needed for the clutch_control
 volatile uint16_t clutch_period = 0;
 volatile double clutch_angle = 0;
@@ -45,6 +43,8 @@ volatile double pitch = 0;
 volatile uint16_t clutch_time = 1800;
 
 volatile uint8_t calculated_ticks = FALSE;
+
+extern volatile fan_time;
 
 void servo_timer_config(){
 	
@@ -194,21 +194,6 @@ void calculate_locktimes(){
 		}else{
 		shiftlock = FALSE;
 	}	
-}
-
-void fan_speed_control(uint8_t temperature, uint16_t engine_running){
-	
-	if(temperature > CLT_MAX){
-		temperature = CLT_MAX;
-	}
-	
-	if(engine_running > 750 && temperature >= CLT_MIN){
-		fan_time = calculate_Servo_ticks(26+(SERVO_MAXANGLE-FAN_MIN)/(CLT_MAX-CLT_MIN)*(temperature-CLT_MIN));
-	} 
-	else {
-			fan_time = 1800;
-	}
-	
 }
 
 ISR(TIMER1_COMPA_vect){

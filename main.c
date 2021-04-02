@@ -19,13 +19,15 @@
 #include "adc_functions.h"
 #include "gear_read.h"
 #include "fan_control.h"
+#include "Fuse_CTRL.h"
 #include <avr/interrupt.h>
 
 extern unsigned long sys_time;
 volatile unsigned long time_old = 0;
-volatile uint8_t time_old_40 = 0;
-volatile uint16_t rpm = 0;
+volatile uint8_t time_old_100 = 0;
+uint16_t rpm = 0;
 volatile uint16_t fan_deadtime = 75;
+
 
 int main(void)
 {
@@ -53,11 +55,11 @@ int main(void)
 	can_ecu0_mob.mob_number = 2;
 	uint8_t ecu0_databytes[8];
 	
-	struct CAN_MOB can_ecu2_mob;
-	can_ecu2_mob.mob_id = 0x602;
-	can_ecu2_mob.mob_idmask = 0xffff;
-	can_ecu2_mob.mob_number = 3;
-	uint8_t ecu2_databytes[8];
+	struct CAN_MOB can_ecu1_mob;
+	can_ecu1_mob.mob_id = 0x602;
+	can_ecu1_mob.mob_idmask = 0xffff;
+	can_ecu1_mob.mob_number = 3;
+	uint8_t ecu1_databytes[8];
 	
 	volatile uint8_t gear = 10;
 	
@@ -65,19 +67,26 @@ int main(void)
 	
     while (1) {
 		
+		//10ms loop 100Hz
 		if((sys_time - time_old) >= 10){
 			time_old = sys_time;
-			time_old_40++;
+			time_old_100++;
 			
 			gear = gear_read(adc_read());
 			//send some additional data to make out if the gear gets transmitted correctly
 			cmc_databytes[0] = gear;
 			cmc_databytes[1] = gear+1;
 			cmc_databytes[2] = gear;
+			cmc_databytes[3] = get_fuse_status()&0xff;//get LSB
+			cmc_databytes[4] = get_fuse_status()>>8;//get MSB	
+			cmc_databytes[5] = 0;
+			cmc_databytes[6] = 0;
+			cmc_databytes[7] = 0;
+					
 			can_tx(&can_CMC_mob, cmc_databytes);
 			can_rx(&can_SWC_mob, swc_databytes);
 			can_rx(&can_ecu0_mob, ecu0_databytes);
-			can_rx(&can_ecu2_mob, ecu2_databytes);
+			can_rx(&can_ecu1_mob, ecu1_databytes);
 			
 			rpm = ecu0_databytes[1]<<8 | ecu0_databytes[0];
 
@@ -87,15 +96,16 @@ int main(void)
 			fuelpump_CTRL(rpm);
 			
 		}
-		if(time_old_40 >=10){
-			time_old_40 = 0;
+		//100ms loop 10Hz
+		if(time_old_100 >=10){
+			time_old_100 = 0;
 			sys_tick();
 			
 			if(fan_deadtime >0){
-				fan_deadtime--;
+				fan_deadtime--;//wo wird sie zurückgesetzt wenn sie einmal kleiner 0 ist
 				
 		}	else {
-				int16_t temp = ecu2_databytes[7]<<8 | ecu2_databytes[6];
+				int16_t temp = ecu1_databytes[7]<<8 | ecu1_databytes[6];
 				
 				if(temp<0){
 					temp = 0;
