@@ -17,7 +17,7 @@ void fan_speed_control(uint8_t temperature, uint16_t rpm){
 		temperature = CLT_MAX;
 	}
 	
-	if(rpm > 750 && temperature >= CLT_MIN){
+	if(rpm > 350 && temperature >= CLT_MIN){
 		fan_time = calculate_Servo_ticks(26+(SERVO_MAXANGLE-FAN_MIN)/(CLT_MAX-CLT_MIN)*(temperature-CLT_MIN));
 	}
 	else {

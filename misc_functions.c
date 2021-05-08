@@ -32,7 +32,7 @@ void sys_timer_config(){
 }
 
 void fuelpump_CTRL(uint16_t rpm){
-	if (rpm >= 750)
+	if (rpm >= 350)
 	{
 		PORTB |= (1<<PB1); //turn on PB1 where the FuelpumpCTRL is connected to to activate the Fuelpump when Engine RPM is high enough
 	}

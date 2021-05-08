@@ -16,10 +16,10 @@
 #define FALSE 0
 
 #define SERVO_MAXANGLE 130
-#define GEAR_SERVO_MIDDLE_ANGLE 65
-#define GEAR_SERVO_SHIFT_UP_ANGLE 55 //60
-#define GEAR_SERVO_SHIFT_DOWN_ANGLE 55 //60
-#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 55
+#define GEAR_SERVO_MIDDLE_ANGLE 57 //57 TY20
+#define GEAR_SERVO_SHIFT_UP_ANGLE 55 //55 TY20
+#define GEAR_SERVO_SHIFT_DOWN_ANGLE 55 //55 TY20
+#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 55 //55 TY20
 #define CLUTCH_MAX_ANGLE 120
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
