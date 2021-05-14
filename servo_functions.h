@@ -17,25 +17,28 @@
 
 #define SERVO_MAXANGLE 130
 #define GEAR_SERVO_MIDDLE_ANGLE 57 //57 TY20
-#define GEAR_SERVO_SHIFT_UP_ANGLE 55 //55 TY20
-#define GEAR_SERVO_SHIFT_DOWN_ANGLE 55 //55 TY20
-#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 55 //55 TY20
+#define GEAR_SERVO_SHIFT_UP_ANGLE 65 //55 TY20
+#define GEAR_SERVO_SHIFT_DOWN_ANGLE 60 //55 TY20
+#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 65 //55 TY20
 #define CLUTCH_MAX_ANGLE 120
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
 #define LOCKTIME_SHIFT 500
 //time in ms before the flatshift is activated
-#define FLATSHIT_OFFSET 120
+#define FLATSHIT_OFFSET 220 //190
+#define BLIPPER_OFFSET 220 //190
 
-#define SHIFT_DURATION_UP (uint8_t) 180
-#define SHIFT_DURATION_DOWN (uint8_t) 250
-#define SHIFT_DURATION_MID (uint8_t) 250
-#define SHIFT_DURATION_NEUTRAL (uint8_t) 200
+#define SHIFT_DURATION_UP (uint16_t) 350 //300
+#define SHIFT_DURATION_DOWN (uint16_t) 350
+#define SHIFT_DURATION_MID (uint16_t) 300
+#define SHIFT_DURATION_NEUTRAL (uint16_t) 300
 //offset for the exact shift position in ticks
 
+#define UP 1
+#define DOWN 0
 
-#define FLATSHIFT_PORT PORTA
-#define FLATSHIFT_PIN PA0
+#define FLATSHIFT_PORT PORTB
+#define FLATSHIFT_PIN PB2
 
 #define SERVO_SHIFT_PORT PORTB
 #define SERVO_SHIFT_PIN PB4

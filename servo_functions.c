@@ -17,6 +17,7 @@ volatile uint8_t shiftlock = FALSE;
 //locktime for a new shifttime
 volatile uint8_t shift = 0;
 volatile uint8_t shift_loktime_set = FALSE;
+volatile uint8_t shift_indicator = 0;
 volatile uint16_t shift_locktime = 0;
 
 //shift_time are the ticks for the timer interrupt
@@ -29,6 +30,8 @@ volatile uint16_t time_mid = 0;
 
 volatile uint8_t gear_desired = 0;
 volatile uint8_t deg_set = FALSE;
+
+volatile uint8_t Blipper_Enable;
 
 extern unsigned long sys_time;
 volatile unsigned long time_shift_started = 0;
@@ -81,6 +84,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 			shift_locktime = LOCKTIME_SHIFT;
 			shiftlock = TRUE;
 			shift = 0;
+			shift_indicator = UP; //Indicates wether the shift up or shift down routine has been started
 			servo_locktime_gear = SHIFT_DURATION_UP + SHIFT_DURATION_MID;
 			if(gear == 0){
 				servo_locktime_gear = SHIFT_DURATION_DOWN + SHIFT_DURATION_MID + 50;
@@ -94,6 +98,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 			shift_locktime = LOCKTIME_SHIFT;
 			shiftlock = TRUE;
 			shift = 2;
+			shift_indicator = DOWN; //Indicates wether the shift up or shift down routine has been started
 			servo_locktime_gear = SHIFT_DURATION_DOWN+SHIFT_DURATION_MID;
 			shift_duration_current = SHIFT_DURATION_DOWN;
 			gear_desired = gear-1;
@@ -126,17 +131,22 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 				}
 			}
 			//if flatshift time elapsed and engine rpm are fitting activate flatshift
-			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && rpm > 3500){
-				PORTA |= (1<<PA0); //Flat shift on
+			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP /*&& rpm > 3500*/){
+				FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
+			}
+			
+			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN /*&& rpm < 5500*/){
+				Blipper_Enable = TRUE;
 			}
 			//when servo should move to middle position again
-			} else {
+		} else {
 
 			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+			Blipper_Enable = FALSE;
 			//set servo to middle position again
 			shift_time = time_mid;
 			deg_set = FALSE;
-		}
+			}
 
 	}
 }
