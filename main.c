@@ -27,7 +27,8 @@ volatile unsigned long time_old = 0;
 volatile uint8_t time_old_100 = 0;
 uint16_t rpm = 0;
 volatile uint16_t fan_deadtime = 75;
-extern volatile Blipper_Enable;
+extern volatile uint8_t Blipper_Enable;
+extern volatile uint8_t Anti_Blipper_Enable;
 
 
 int main(void)
@@ -81,7 +82,7 @@ int main(void)
 			cmc_databytes[3] = get_fuse_status()&0xff;//get LSB
 			cmc_databytes[4] = get_fuse_status()>>8;//get MSB	
 			cmc_databytes[5] = Blipper_Enable;
-			cmc_databytes[6] = 1;
+			cmc_databytes[6] = Anti_Blipper_Enable;
 			cmc_databytes[7] = 2;
 					
 			can_tx(&can_CMC_mob, cmc_databytes);

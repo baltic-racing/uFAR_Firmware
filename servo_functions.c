@@ -32,6 +32,7 @@ volatile uint8_t gear_desired = 0;
 volatile uint8_t deg_set = FALSE;
 
 volatile uint8_t Blipper_Enable;
+volatile uint8_t Anti_Blipper_Enable;
 
 extern unsigned long sys_time;
 volatile unsigned long time_shift_started = 0;
@@ -47,7 +48,7 @@ volatile uint16_t clutch_time = 1800;
 
 volatile uint8_t calculated_ticks = FALSE;
 
-extern volatile fan_time;
+extern volatile int16_t fan_time;
 
 void servo_timer_config(){
 	
@@ -131,11 +132,12 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 				}
 			}
 			//if flatshift time elapsed and engine rpm are fitting activate flatshift
-			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP /*&& rpm > 3500*/){
+			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 3500){
 				FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
+				Anti_Blipper_Enable = TRUE;
 			}
 			
-			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN /*&& rpm < 5500*/){
+			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 5500){
 				Blipper_Enable = TRUE;
 			}
 			//when servo should move to middle position again

@@ -24,8 +24,9 @@
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
 #define LOCKTIME_SHIFT 500
-//time in ms before the flatshift is activated
+//time in ms before the flatshift and Antiblip is activated
 #define FLATSHIT_OFFSET 220 //190
+//time in ms before the Blipper is activated
 #define BLIPPER_OFFSET 220 //190
 
 #define SHIFT_DURATION_UP (uint16_t) 350 //300

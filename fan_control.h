@@ -19,8 +19,8 @@
 #define FAN2_PORT	PORTE
 #define FAN2_PIN	PE4
 #define FAN_MIN		20 //26
-#define CLT_MAX		95 //105
-#define CLT_MIN		60
+#define CLT_MAX		110 //105
+#define CLT_MIN		80
 
 void fan_speed_control(uint8_t temperature, uint16_t rpm);
 
