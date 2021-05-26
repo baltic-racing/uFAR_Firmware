@@ -132,12 +132,12 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 				}
 			}
 			//if flatshift time elapsed and engine rpm are fitting activate flatshift
-			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 3500){
+			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 2500){
 				FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
 				Anti_Blipper_Enable = TRUE;
 			}
 			
-			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 5500){
+			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 6500){
 				Blipper_Enable = TRUE;
 			}
 			//when servo should move to middle position again
@@ -145,6 +145,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 
 			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
 			Blipper_Enable = FALSE;
+			Anti_Blipper_Enable = FALSE;
 			//set servo to middle position again
 			shift_time = time_mid;
 			deg_set = FALSE;
