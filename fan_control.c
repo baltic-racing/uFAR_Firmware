@@ -13,11 +13,14 @@ volatile uint16_t fan_time = 1800;
 
 void fan_speed_control(uint8_t temperature, uint16_t rpm){
 	
+	//temperature = 80;
+	//rpm=9000;
+	
 	if(temperature > CLT_MAX){
 		temperature = CLT_MAX;
 	}
 	
-	if(rpm > 350 && temperature >= CLT_MIN){
+	if(rpm > 1000 && temperature >= CLT_MIN){
 		fan_time = calculate_Servo_ticks(26+(SERVO_MAXANGLE-FAN_MIN)/(CLT_MAX-CLT_MIN)*(temperature-CLT_MIN));
 	}
 	else {

@@ -29,6 +29,7 @@ uint16_t rpm = 0;
 volatile uint16_t fan_deadtime = 75;
 extern volatile uint8_t Blipper_Enable;
 extern volatile uint8_t Anti_Blipper_Enable;
+extern uint16_t fan_time;
 
 
 int main(void)
@@ -77,13 +78,13 @@ int main(void)
 			gear = gear_read(adc_read());
 			//send some additional data to make out if the gear gets transmitted correctly
 			cmc_databytes[0] = gear;
-			cmc_databytes[1] = gear+1;
-			cmc_databytes[2] = gear;
+			cmc_databytes[1] = fan_time & 0xff;
+			cmc_databytes[2] = fan_time >> 8;
 			cmc_databytes[3] = get_fuse_status()&0xff;//get LSB
 			cmc_databytes[4] = get_fuse_status()>>8;//get MSB	
 			cmc_databytes[5] = Blipper_Enable;
 			cmc_databytes[6] = Anti_Blipper_Enable;
-			cmc_databytes[7] = 2;
+			cmc_databytes[7] = gear+1;
 					
 			can_tx(&can_CMC_mob, cmc_databytes);
 			can_rx(&can_SWC_mob, swc_databytes);

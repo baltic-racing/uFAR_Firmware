@@ -16,23 +16,23 @@
 #define FALSE 0
 
 #define SERVO_MAXANGLE 130
-#define GEAR_SERVO_MIDDLE_ANGLE 57 //57 TY20
-#define GEAR_SERVO_SHIFT_UP_ANGLE 65 //55 TY20
-#define GEAR_SERVO_SHIFT_DOWN_ANGLE 60 //55 TY20
-#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 65 //55 TY20
+#define GEAR_SERVO_MIDDLE_ANGLE 75 //75 TY20
+#define GEAR_SERVO_SHIFT_UP_ANGLE 55 //65 TY20
+#define GEAR_SERVO_SHIFT_DOWN_ANGLE 75 //65 TY20
+#define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 65 //65 TY20
 #define CLUTCH_MAX_ANGLE 120
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
-#define LOCKTIME_SHIFT 500
+#define LOCKTIME_SHIFT 250 //500
 //time in ms before the flatshift and Antiblip is activated
-#define FLATSHIT_OFFSET 220 //190
+#define FLATSHIT_OFFSET 50 //220
 //time in ms before the Blipper is activated
-#define BLIPPER_OFFSET 220 //190
+#define BLIPPER_OFFSET 0 //220
 
-#define SHIFT_DURATION_UP (uint16_t) 350 //300
-#define SHIFT_DURATION_DOWN (uint16_t) 350
-#define SHIFT_DURATION_MID (uint16_t) 300
-#define SHIFT_DURATION_NEUTRAL (uint16_t) 300
+#define SHIFT_DURATION_UP (uint16_t) 80 //350
+#define SHIFT_DURATION_DOWN (uint16_t) 150 //350
+#define SHIFT_DURATION_MID (uint16_t) 50 //300
+#define SHIFT_DURATION_NEUTRAL (uint16_t) 150 //300
 //offset for the exact shift position in ticks
 
 #define UP 1
