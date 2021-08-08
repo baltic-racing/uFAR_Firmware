@@ -14,7 +14,8 @@
 
 #define TRUE 1
 #define FALSE 0
-//2.24
+
+#define GEAR_0_VOLTAGE 1.94
 #define GEAR_1_VOLTAGE 2.99 
 #define GEAR_2_VOLTAGE 3.5
 #define GEAR_3_VOLTAGE 4.04

@@ -30,7 +30,13 @@ volatile uint16_t fan_deadtime = 75;
 extern volatile uint8_t Blipper_Enable;
 extern volatile uint8_t Anti_Blipper_Enable;
 extern uint16_t fan_time;
-
+uint8_t LC_Active = 0;
+double BP = 0;
+uint8_t APPS1 = 0;
+uint8_t APPS2 = 0;
+extern LC_Launch;
+extern LC_Ready;
+extern EMULC_Active;
 
 int main(void)
 {
@@ -64,6 +70,30 @@ int main(void)
 	can_ecu1_mob.mob_number = 3;
 	uint8_t ecu1_databytes[8];
 	
+	struct CAN_MOB can_DIC_mob;
+	can_ecu1_mob.mob_id = 0x202;
+	can_ecu1_mob.mob_idmask = 0xffff;
+	can_ecu1_mob.mob_number = 4;
+	uint8_t DIC_databytes[8];
+	
+	struct CAN_MOB can_ETC_mob;
+	can_ETC_mob.mob_id = 0x201;
+	can_ETC_mob.mob_idmask = 0xffff;
+	can_ETC_mob.mob_number = 5;
+	uint8_t ETC_databytes[8];
+	
+	struct CAN_MOB can_SHL_mob;
+	can_SHL_mob.mob_id = 0x503;
+	can_SHL_mob.mob_idmask = 0xffff;
+	can_SHL_mob.mob_number = 6;
+	uint8_t SHL_databytes[8];
+	
+	struct CAN_MOB can_EMUSW_mob;
+	can_EMUSW_mob.mob_id = 0x606;
+	can_EMUSW_mob.mob_idmask = 0xffff;
+	can_EMUSW_mob.mob_number = 7;
+	uint8_t EMUSW_databytes[8];	
+		
 	volatile uint8_t gear = 10;
 	
 	sei();
@@ -87,15 +117,32 @@ int main(void)
 			cmc_databytes[7] = gear+1;
 					
 			can_tx(&can_CMC_mob, cmc_databytes);
+			can_tx(&can_EMUSW_mob, EMUSW_databytes);
+			
 			can_rx(&can_SWC_mob, swc_databytes);
 			can_rx(&can_ecu0_mob, ecu0_databytes);
 			can_rx(&can_ecu1_mob, ecu1_databytes);
+			can_rx(&can_DIC_mob, DIC_databytes);
 			
 			rpm = ecu0_databytes[1]<<8 | ecu0_databytes[0];
+			LC_Active = DIC_databytes[0];
+			BP = (SHL_databytes[3] <<8|SHL_databytes[2])/10; //gets Brake Pressure in 0.1 Bar
+			APPS1 = ETC_databytes[0];
+			APPS2 = ETC_databytes[1];
+			
+			//IF we are in the Launch control procedure we want to tell the ecumaster to switch 2step on via the CAN SW1 bit
+			if (EMULC_Active = TRUE;)
+			{
+				EMUSW_databytes[5] = 1;
+			}
+			else
+			{
+				EMUSW_databytes[5] = 0;
+			}
 
 			calculate_locktimes();
 			shift_control(SHIFT_UP,SHIFT_DOWN,gear,rpm);
-			clutch_control(BUTTON_LEFT||BUTTON_RIGHT,LEFT_ENCODER+1);
+			clutch_control(BUTTON_LEFT||BUTTON_RIGHT,LEFT_ENCODER+1,gear,LC_Active,APPS1,APPS2,BP);
 			fuelpump_CTRL(rpm);
 			
 		}

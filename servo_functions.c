@@ -33,6 +33,10 @@ volatile uint8_t deg_set = FALSE;
 
 volatile uint8_t Blipper_Enable;
 volatile uint8_t Anti_Blipper_Enable;
+volatile uint8_t LC_Ready = FALSE;
+volatile uint8_t LC_Launch = FALSE;
+volatile uint8_t EMULC_Active = FALSE;
+extern LC_Active;
 
 extern unsigned long sys_time;
 volatile unsigned long time_shift_started = 0;
@@ -75,6 +79,10 @@ void calculate_general_ticks(void){
 }
 void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t rpm){
 	
+	if (rpm >= SHIFT_UP_RPM && LC_Active == TRUE && gear <= 0){
+		shift_up = TRUE;
+	}
+	
 	//if shifting process wasn't started and a shifting signal is received
 	if(!shiftlock && (shift_up == 1 || shift_down == 1)){
 		
@@ -87,6 +95,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 			shift = 0;
 			shift_indicator = UP; //Indicates wether the shift up or shift down routine has been started
 			servo_locktime_gear = SHIFT_DURATION_UP + SHIFT_DURATION_MID;
+			shift_up = FALSE;
 			if(gear == 0){
 				servo_locktime_gear = SHIFT_DURATION_DOWN + SHIFT_DURATION_MID + 50;
 			}
@@ -174,21 +183,55 @@ void servo_lock()
 		shiftlock = FALSE;
 	}
 }
-void clutch_control(uint8_t clutch, uint8_t clutch_speed){
-	
+void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t LC_Active, uint16_t APPS1, uint16_t APPS2, uint16_t BP ){
+
 
 	if(clutch==TRUE){
 
 		clutch_angle = CLUTCH_MAX_ANGLE;
-		clutch_time = calculate_Servo_ticks(clutch_angle);
-		clutch_period = 500*(clutch_speed);
-		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period/10.0);
+		clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate servo PWM signal for fully pulled angle
+		clutch_period = 500*(clutch_speed);  //Calculate the release speed
+		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period/10.0); //Calculate the released Angle per tick
+		LC_Ready =FALSE;
+		EMULC_Active = FALSE;
 	
-	}else{
+	}else if (LC_Active==TRUE && clutch==FALSE){//Use LC Method if desired
+		if (BP >= BP_MIN && gear == 1 && APPS1 + APPS2 >= 45 && LC_Ready != TRUE){//Only release servo tho slip position when car is hold with brakes, we are in the right gear & the driver is at least pushing half the throttle
+			
+			EMULC_Active = TRUE;
+			
+			clutch_angle = CLUTCH_SLIP_ANGLE; //Set the Clutch angle to be the slip angle
+			clutch_time = calculate_Servo_ticks(CLUTCH_SLIP_ANGLE); //Get the PWM Signal for the slip angle
+			LC_Ready = TRUE; //Set the LC Setup Process to be finished
+			
+			clutch_period = 500*(CLUTCH_SPEED_LAUNCH);  //Calculate the release speed for Launch Control
+			pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period/10.0); //Calculate the released Angle per tick for launch control	
+		}
+		
+		if (BP <= BP_RELEASE && LC_Ready == TRUE){ //IF we are ready to launch the car and th driver releases the brake pedal the car launches forward
+			LC_Launch = TRUE; // start the Launch Procedure
+		}	
+		
+		if (LC_Launch = TRUE){
+			if(clutch_period > 0){
+				clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
+				clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate the PWM signal for the new angle
+				clutch_period -= 10;
+				if (clutch_period <= 0){ // if the launch process is finished re enable new process to be initiated
+					LC_Launch = FALSE;
+					LC_Ready = FALSE;
+					EMULC_Active = FALSE;
+				}
+			}			
+		}
+				
+	}else{//Use standard Routine if no Launch control is desired
 		if(clutch_period > 0){
-			clutch_angle = clutch_angle-pitch;
-			clutch_time = calculate_Servo_ticks(clutch_angle);
+			clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
+			clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate the PWM signal for the new angle
 			clutch_period -= 10;
+			LC_Launch == TRUE; //If we swicth LC active on during servo release we go into the release function of the LC Process resulting in the servo not stalling
+			EMULC_Active = FALSE;
 		}
 	}
 }

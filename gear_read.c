@@ -59,6 +59,12 @@ uint8_t gear_read(uint16_t adc_value){
 					if(adc_value <= adc_gear_values[0] + ADC_GEAR_TOLERANCE){
 						gear = 1;
 					}
+					//Superspecial function for if the 1. Gear is not welded but there is no Gear we assume we are in neutral.
+					if (adc_value <= GEAR_0_VOLTAGE * (ADC_MAX_VALUE/ADC_VOLTAGE_REF)+ADC_GEAR_TOLERANCE/2 && adc_value >= GEAR_0_VOLTAGE * (ADC_MAX_VALUE/ADC_VOLTAGE_REF)-ADC_GEAR_TOLERANCE/2)
+					{
+						gear = 0;
+					}
+					
 			}
 
 			++x;
