@@ -14,11 +14,13 @@ volatile uint8_t servo_active = 0;
 volatile uint8_t servo_locktime_gear = 0;
 volatile uint8_t servo_locktime_clutch = 0;
 volatile uint8_t shiftlock = FALSE;
+volatile uint16_t Auto_shiftlock = 0;
 //locktime for a new shifttime
 volatile uint8_t shift = 0;
-volatile uint8_t shift_loktime_set = FALSE;
 volatile uint8_t shift_indicator = 0;
 volatile uint16_t shift_locktime = 0;
+volatile uint8_t shift_complete = 0;
+volatile unsigned long sys_time_launch = 0;
 
 //shift_time are the ticks for the timer interrupt
 //time_* are the ticks for the desired position
@@ -36,7 +38,10 @@ volatile uint8_t Anti_Blipper_Enable;
 volatile uint8_t LC_Ready = FALSE;
 volatile uint8_t LC_Launch = FALSE;
 volatile uint8_t EMULC_Active = FALSE;
-extern LC_Active;
+
+
+uint8_t Launch_Flatshift_Active = 0;
+uint8_t Shift_Flatshift_Active = 0;
 
 extern unsigned long sys_time;
 volatile unsigned long time_shift_started = 0;
@@ -53,6 +58,9 @@ volatile uint16_t clutch_time = 1800;
 volatile uint8_t calculated_ticks = FALSE;
 
 extern volatile int16_t fan_time;
+extern double BP;
+
+uint8_t gear_up_autmatic = 0;
 
 void servo_timer_config(){
 	
@@ -66,8 +74,8 @@ void servo_timer_config(){
 	if (calculated_ticks == FALSE){
 		calculate_general_ticks();		
 	}
-	
 }
+
 void calculate_general_ticks(void){
 	
 	time_up = calculate_Servo_ticks(GEAR_SERVO_SHIFT_UP_ANGLE + GEAR_SERVO_MIDDLE_ANGLE);
@@ -77,15 +85,30 @@ void calculate_general_ticks(void){
 	calculated_ticks = TRUE;
 		
 }
-void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t rpm){
-	
-	if (rpm >= SHIFT_UP_RPM && LC_Active == TRUE && gear <= 0){
-		shift_up = TRUE;
+
+void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t rpm, uint8_t LC_Active, double GPS_Speed){
+
+	if(LC_Active == TRUE && gear > 0 && Auto_shiftlock <= 0){
+		if (gear == 1 && GPS_Speed >= FIRST_GEAR_SHIFT_SPEED && rpm >= SHIFT_UP_RPM_EINS){//Special case for shift into 2. gear because of wheel spin we use GPS Speed to verify that we actually want to shift !! Switch to friont wheelspeed when datalogger is not in car
+			shift_up = TRUE;
+			gear_up_autmatic = TRUE;
+			Auto_shiftlock = AUTO_SHIFTLOCK_TIME;
+		}
+		if (gear > 1 && rpm >= SHIFT_UP_RPM){
+			shift_up = TRUE;
+			gear_up_autmatic = TRUE;
+			Auto_shiftlock = AUTO_SHIFTLOCK_TIME;
+
+		}
 	}
-	
+	//Subtracts 10ms per 10ms cycle.
+	if (Auto_shiftlock>0){
+		Auto_shiftlock-=10;
+	}
+
 	//if shifting process wasn't started and a shifting signal is received
 	if(!shiftlock && (shift_up == 1 || shift_down == 1)){
-		
+		shift_complete = FALSE;
 		//set start timestamp
 		time_shift_started = sys_time;
 		//if shift up signal comes
@@ -96,11 +119,20 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 			shift_indicator = UP; //Indicates wether the shift up or shift down routine has been started
 			servo_locktime_gear = SHIFT_DURATION_UP + SHIFT_DURATION_MID;
 			shift_up = FALSE;
+			gear_up_autmatic = FALSE;
 			if(gear == 0){
 				servo_locktime_gear = SHIFT_DURATION_DOWN + SHIFT_DURATION_MID + 50;
+			}else if (gear == 1)
+			{
+				servo_locktime_gear = SHIFT_DURATION_UP_EINS + SHIFT_DURATION_MID;
 			}
 			gear_desired = gear + 1;
-			shift_duration_current = SHIFT_DURATION_UP;
+			if (gear == 1){
+				shift_duration_current = SHIFT_DURATION_UP_EINS;	
+			}else{
+				shift_duration_current = SHIFT_DURATION_UP;	
+			}
+			
 			//if we are in neutral and shift up we want gear 1
 		}
 		//if shift down signal is received
@@ -141,98 +173,112 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 				}
 			}
 			//if flatshift time elapsed and engine rpm are fitting activate flatshift
-			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 2500){
+			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 5500){
+				Shift_Flatshift_Active = TRUE;
 				FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
-				Anti_Blipper_Enable = TRUE;
 			}
 			
-			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 6500){
+			if(((sys_time - time_shift_started)>ANTI_BLIP_OFFSET) && shift_indicator == UP && rpm > 10000){
+				Anti_Blipper_Enable = TRUE;
+			}			
+			
+			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 8500){
 				Blipper_Enable = TRUE;
 			}
-			//when servo should move to middle position again
-		} else {
-
-			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+		}else{
+			Blipper_Enable = FALSE;
+			Anti_Blipper_Enable = FALSE;
 			Blipper_Enable = FALSE;
 			Anti_Blipper_Enable = FALSE;
 			//set servo to middle position again
 			shift_time = time_mid;
-			deg_set = FALSE;
-			}
-
+			deg_set = FALSE;	
+			
+		}
+			//when servo should move to middle position again
+	} if((shift_complete == FALSE && gear == gear_desired) || (shift_complete == FALSE && (sys_time-time_shift_started) >= shift_duration_current)){
+			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+			Shift_Flatshift_Active = FALSE;
+			shift_complete = TRUE;
+		}
 	}
-}
+
+
 uint16_t calculate_Servo_ticks(double deg){
 	
 	return (uint16_t) (1800 + (deg * (2400.0 / SERVO_MAXANGLE)));
 	
 }
-void servo_lock()
-{
-	//locktime calculations
-	if (servo_locktime_gear > 0){
-		servo_locktime_gear-=1;
-	}
-	if (servo_locktime_clutch > 0){
-		servo_locktime_clutch-=1;
-	}
-	if(shift_locktime == TRUE){
 
-		shift_locktime -= 1;
-	}else{
-		shiftlock = FALSE;
-	}
-}
 void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t LC_Active, uint16_t APPS1, uint16_t APPS2, uint16_t BP ){
-
 
 	if(clutch==TRUE){
 
 		clutch_angle = CLUTCH_MAX_ANGLE;
 		clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate servo PWM signal for fully pulled angle
 		clutch_period = 500*(clutch_speed);  //Calculate the release speed
-		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period/10.0); //Calculate the released Angle per tick
+		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period); //Calculate the released Angle per tick
 		LC_Ready =FALSE;
-		EMULC_Active = FALSE;
+		FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+		Launch_Flatshift_Active = FALSE;
+		LC_Launch = FALSE;
+	}
 	
-	}else if (LC_Active==TRUE && clutch==FALSE){//Use LC Method if desired
-		if (BP >= BP_MIN && gear == 1 && APPS1 + APPS2 >= 45 && LC_Ready != TRUE){//Only release servo tho slip position when car is hold with brakes, we are in the right gear & the driver is at least pushing half the throttle
+	if(LC_Active==TRUE && clutch==FALSE){//Use LC Method if desired
+		if (BP >= BP_MIN && gear == 1 && LC_Ready != TRUE && clutch_period > 0){//Only release servo tho slip position when car is hold with brakes, we are in the right gear & the driver is at least pushing half the throttle
 			
-			EMULC_Active = TRUE;
-			
+			FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
+			Launch_Flatshift_Active = TRUE;
 			clutch_angle = CLUTCH_SLIP_ANGLE; //Set the Clutch angle to be the slip angle
 			clutch_time = calculate_Servo_ticks(CLUTCH_SLIP_ANGLE); //Get the PWM Signal for the slip angle
 			LC_Ready = TRUE; //Set the LC Setup Process to be finished
 			
-			clutch_period = 500*(CLUTCH_SPEED_LAUNCH);  //Calculate the release speed for Launch Control
-			pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period/10.0); //Calculate the released Angle per tick for launch control	
-		}
+			clutch_period = 50*(CLUTCH_SPEED_LAUNCH);  //Calculate the release speed for Launch Control
+			pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period); //Calculate the released Angle per tick for launch control	
 		
-		if (BP <= BP_RELEASE && LC_Ready == TRUE){ //IF we are ready to launch the car and th driver releases the brake pedal the car launches forward
+		}else if (BP >= BP_RELEASE && LC_Ready == TRUE) { 
+		
+		}else if (BP <= BP_RELEASE && LC_Ready == TRUE){ //IF we are ready to launch the car and th driver releases the brake pedal the car launches forward
 			LC_Launch = TRUE; // start the Launch Procedure
-		}	
+			sys_time_launch = sys_time;
+			LC_Ready = FALSE;
+			
 		
-		if (LC_Launch = TRUE){
+		}else if (LC_Launch == TRUE){
 			if(clutch_period > 0){
 				clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
 				clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate the PWM signal for the new angle
-				clutch_period -= 10;
+				clutch_period -= 1;
+				
 				if (clutch_period <= 0){ // if the launch process is finished re enable new process to be initiated
-					LC_Launch = FALSE;
 					LC_Ready = FALSE;
-					EMULC_Active = FALSE;
 				}
 			}			
+		}else{
+			if(clutch_period > 0){
+				clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
+				clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate the PWM signal for the new angle
+				clutch_period -= 1;
+			}
 		}
 				
 	}else{//Use standard Routine if no Launch control is desired
 		if(clutch_period > 0){
 			clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
 			clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate the PWM signal for the new angle
-			clutch_period -= 10;
-			LC_Launch == TRUE; //If we swicth LC active on during servo release we go into the release function of the LC Process resulting in the servo not stalling
-			EMULC_Active = FALSE;
+			clutch_period -= 1;
+			//LC_Launch == TRUE; //If we swicth LC active on during servo release we go into the release function of the LC Process resulting in the servo not stalling
+			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+			Launch_Flatshift_Active = FALSE;
 		}
+	}
+	
+	
+	if (sys_time >= (sys_time_launch + TWO_STEP_OFFSET) && Launch_Flatshift_Active == TRUE && LC_Launch == TRUE)
+	{
+		FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
+		Launch_Flatshift_Active = FALSE;
+		LC_Launch = FALSE;
 	}
 }
 
@@ -292,13 +338,13 @@ ISR(TIMER1_COMPA_vect){
 			FAN1_PORT |= (1<<FAN1_PIN);
 			OCR1A = fan_time;
 			servo_active = 3;
-		break;
+			break;
 		case 3:
 			FAN1_PORT &= ~(1<<FAN1_PIN);
 			FAN2_PORT |= (1<<FAN2_PIN);
 			OCR1A = fan_time;
 			servo_active = 0;
-		break;
+			break;
 	}
 	//re enable interrupts
 	sei();
