@@ -18,6 +18,8 @@ void sys_timer_config();
 ISR(TIMER0_COMP_vect);
 void sys_tick();
 void fuelpump_CTRL();
+void tc();
+void tractionControl();
 
 
 #endif /* MISC_FUNCTIONS_H_ */

@@ -213,12 +213,12 @@ uint16_t calculate_Servo_ticks(double deg){
 void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t LC_Active, uint16_t APPS1, uint16_t APPS2, uint16_t BP ){
 
 	if(clutch==TRUE){
-
+		
 		clutch_angle = CLUTCH_MAX_ANGLE;
 		clutch_time = calculate_Servo_ticks(clutch_angle); //Calculate servo PWM signal for fully pulled angle
 		clutch_period = 500*(clutch_speed);  //Calculate the release speed
 		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period); //Calculate the released Angle per tick
-		LC_Ready =FALSE;
+		LC_Ready = FALSE;
 		FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
 		Launch_Flatshift_Active = FALSE;
 		LC_Launch = FALSE;

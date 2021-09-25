@@ -25,6 +25,37 @@ extern uint8_t APPS2;
 extern double BP;
 
 extern uint8_t swc_databytes[8];
+extern uint8_t SHL_databytes[8];
+extern uint8_t SHR_databytes[8];
+
+uint8_t tcIgnitionDropoutTime = 0;
+uint8_t tcMode = 0;
+float vsrele, vsreri, vsfrle, vsfrri, vsfr, vsre, slip;
+float slipDesired = 0.1;
+uint8_t tc_period=50; //Period Time Traction Control Regulation
+unsigned long old_tc_time = 0;
+unsigned long time_old_tc = 0;
+uint8_t tc_lock = 0;
+extern uint8_t shiftlock;
+
+uint8_t tc_mde_slip[16]={
+	100,
+	90,
+	80,
+	70,
+	65,
+	60,
+	55,
+	50,
+	45,
+	40,
+	35,
+	30,
+	25,
+	20,
+	15,
+	10
+};
 
 #define SHIFT_UP swc_databytes[3]
 #define SHIFT_DOWN swc_databytes[2]
@@ -74,5 +105,47 @@ ISR(TIMER0_COMP_vect){
 	//for every time the timer equals 249 an interrupt is generated resulting in invreasing the SYStime
 	
 	clutch_control(BUTTON_RIGHT|BUTTON_LEFT,LEFT_ENCODER+1,gear,LC_State,APPS1,APPS2,BP);
+	
+}
+
+void tc(){
+	if(time_old_tc < sys_time && !shiftlock){
+		
+		if(sys_time-old_tc_time >= tcIgnitionDropoutTime && tc_lock){
+			PORTE &= ~(1<<PE3); //Flat shift off
+			tc_lock = 0;
+			old_tc_time = sys_time;
+		}
+		if (tcIgnitionDropoutTime != 0 && tcMode != 0 && sys_time-old_tc_time>=(tc_period-tcIgnitionDropoutTime) && !tc_lock){
+			PORTE |= (1<<PE3); //Flat shift on
+			old_tc_time = sys_time;
+			tc_lock = 1;
+		}
+		time_old_tc = sys_time;		
+	}
+}
+
+void tractionControl(){
+	tcMode = LEFT_ENCODER;
+	vsrele = SHL_databytes[2] / 2.0; // get all Wheelspeeds
+	vsfrri = SHR_databytes[3] / 2.0;
+	vsfrle = SHL_databytes[3] / 2.0;
+	vsreri = SHR_databytes[2] / 2.0; 
+	vsfr = (vsfrle + vsfrri) / 2; // calculate average Wheelspeed Front
+	vsre = (vsrele + vsreri) / 2; // and Rear
+	if (vsfr >= 4) // Active if more than 4 kph
+	{
+		slip = 1.0 * (vsre - vsfr) / vsre; // calculate Slip
+	}else{
+		slip = 0;
+	}
+
+	if (tcMode > 0 && slipDesired<slip){ // Active depending on driver wish and slip
+		tcIgnitionDropoutTime = tc_period * (tc_mde_slip[tcMode] / 100.0) * (slip - slipDesired) * 1.5; // calculate Dropout time
+	}else{
+		tcIgnitionDropoutTime = 0;
+	}
+	
+	
 	
 }

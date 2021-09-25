@@ -23,9 +23,12 @@
 #define RIGHT_ENCODER swc_databytes[0]
 
 uint8_t swc_databytes[8];
+uint8_t SHL_databytes[8];
+uint8_t SHR_databytes[8];
 
 extern unsigned long sys_time;
 volatile unsigned long time_old = 0;
+volatile uint8_t time_old_50 = 0;
 volatile uint8_t time_old_100 = 0;
 uint16_t rpm = 0;
 volatile uint16_t fan_deadtime = 75;
@@ -91,7 +94,6 @@ int main(void)
 	can_SHL_mob.mob_id = 0x503;
 	can_SHL_mob.mob_idmask = 0xffff;
 	can_SHL_mob.mob_number = 6;
-	uint8_t SHL_databytes[8];
 	
 	struct CAN_MOB can_EMUSW_mob;
 	can_EMUSW_mob.mob_id = 0x606;
@@ -110,17 +112,24 @@ int main(void)
 	can_CMC2_mob.mob_idmask = 0;
 	can_CMC2_mob.mob_number = 9;
 	uint8_t cmc2_databytes[8];	
-
+	
+	struct CAN_MOB can_SHR_mob;
+	can_SHR_mob.mob_id = 0x500;
+	can_SHR_mob.mob_idmask = 0;
+	can_SHR_mob.mob_number = 10;	
+	
 	volatile uint8_t gear = 10;
 	
 	sei();
 	
     while (1) {
 		
+		tc();
 		//10ms loop 100Hz
 		if((sys_time - time_old) >= 10){
 			time_old = sys_time;
 			time_old_100++;
+			time_old_50++;
 			
 			if (Launch_Flatshift_Active == TRUE || Shift_Flatshift_Active == TRUE)
 			{
@@ -160,6 +169,7 @@ int main(void)
 			can_rx(&can_ETC_mob, ETC_databytes);
 			can_rx(&can_DL3_mob, DL3_databytes);
 			can_rx(&can_SHL_mob, SHL_databytes);
+			can_rx(&can_SHR_mob, SHR_databytes);
 			
 			rpm = ecu0_databytes[1]<<8 | ecu0_databytes[0];
 			LC_State = DIC_databytes[0];
@@ -177,6 +187,12 @@ int main(void)
 		
 		}
 		
+		//50ms loop
+		if(time_old_50 >=5){
+			time_old_50++;
+			tractionControl();
+		}
+		
 		//100ms loop 10Hz
 		if(time_old_100 >=10){
 			time_old_100 = 0;
@@ -188,7 +204,7 @@ int main(void)
 		}	else {
 				int16_t temp = ecu1_databytes[7]<<8 | ecu1_databytes[6];
 				
-				if(temp<0){
+				if(temp < 0){
 					temp = 0;
 				}
 				
