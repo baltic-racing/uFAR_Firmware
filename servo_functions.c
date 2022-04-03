@@ -121,7 +121,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 			shift_up = FALSE;
 			gear_up_autmatic = FALSE;
 			if(gear == 0){
-				servo_locktime_gear = SHIFT_DURATION_DOWN + SHIFT_DURATION_MID + 50;
+				servo_locktime_gear = SHIFT_DURATION_UP + SHIFT_DURATION_MID + 50;
 			}else if (gear == 1)
 			{
 				servo_locktime_gear = SHIFT_DURATION_UP_EINS + SHIFT_DURATION_MID;
@@ -173,16 +173,16 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 				}
 			}
 			//if flatshift time elapsed and engine rpm are fitting activate flatshift
-			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP && rpm > 5500){
+			if(((sys_time - time_shift_started)>FLATSHIT_OFFSET) && shift_indicator == UP/* &&> rpm > 5500*/){
 				Shift_Flatshift_Active = TRUE;
 				FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
 			}
 			
-			if(((sys_time - time_shift_started)>ANTI_BLIP_OFFSET) && shift_indicator == UP && rpm > 10000){
+			if(((sys_time - time_shift_started)>ANTI_BLIP_OFFSET) && shift_indicator == UP/* && rpm > 10000*/){
 				Anti_Blipper_Enable = TRUE;
 			}			
 			
-			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN && rpm < 8500){
+			if(((sys_time - time_shift_started)>BLIPPER_OFFSET) && shift_indicator == DOWN/* && rpm < 8500*/){
 				Blipper_Enable = TRUE;
 			}
 		}else{

@@ -34,10 +34,10 @@ extern uint8_t swc_databytes[8];
 #define RIGHT_ENCODER swc_databytes[0]
 
 void port_config(){
-	DDRA = 0;												//All either generic Digital Inputs or Fuse Inputs
-	DDRB = 0 | (1<<PB4) | (1<<PB5) | (1<<PB2) | (1<<PB1);	//Mark PB1, PB2, PB4 and PB5 as output (Fuelpump_CTRL, Flatshift, Shiftsensor, Clutchsensor)
+	DDRA = 0 | (1<<PA0);									//All either generic Digital Inputs or Fuse Inputs Mark PA0 as Flatshift out
+	DDRB = 0 | (1<<PB4) | (1<<PB5) | (1<<PB2) | (1<<PB1);	//Mark PB1, PB2, PB4 and PB5 as output (Fuelpump_CTRL, Shiftsensor, Clutchsensor)
 	DDRC = 0 | (1<<PC0) | (1<<PC2);							//PC0 and PC2 as Output for Heart and Foult LED otherwise unused
-	DDRD = 0;												//Either Fuse or can so all Input
+	DDRD = 0 | (1<<PD0) ;												//Either Fuse or can so all Input
 	DDRE = 0 | (1<<PE3) | (1<<PE4);							//PE3 and PE4 as FAN_CTRL outputs otherwise Fuse Inputs
 	DDRF = 0;												//mark analog inputs on Port F as input
 }

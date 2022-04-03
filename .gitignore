@@ -1,0 +1,11 @@
+
+*.srec
+*.map
+*.lss
+*.hex
+*.elf
+*.eep
+*.o
+*.d
+*.mk
+Debug/Makefile
