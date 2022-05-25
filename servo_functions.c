@@ -225,7 +225,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 	if(clutch==TRUE){
 
 		clutch_angle = CLUTCH_MAX_ANGLE;
-		clutch_time = calculate_Servo_ticks(clutch_angle, Savox); //Calculate servo PWM signal for fully pulled angle
+		clutch_time = calculate_Servo_ticks(clutch_angle, JXC); //Calculate servo PWM signal for fully pulled angle
 		clutch_period = 500*(clutch_speed);  //Calculate the release speed
 		pitch = (double)(CLUTCH_MAX_ANGLE)/(clutch_period); //Calculate the released Angle per tick
 		LC_Ready =FALSE;
@@ -240,7 +240,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 			FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
 			Launch_Flatshift_Active = TRUE;
 			clutch_angle = CLUTCH_SLIP_ANGLE; //Set the Clutch angle to be the slip angle
-			clutch_time = calculate_Servo_ticks(CLUTCH_SLIP_ANGLE, Savox); //Get the PWM Signal for the slip angle
+			clutch_time = calculate_Servo_ticks(CLUTCH_SLIP_ANGLE, JXC); //Get the PWM Signal for the slip angle
 			LC_Ready = TRUE; //Set the LC Setup Process to be finished
 			
 			clutch_period = 50*(CLUTCH_SPEED_LAUNCH);  //Calculate the release speed for Launch Control
@@ -257,7 +257,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 		}else if (LC_Launch == TRUE){
 			if(clutch_period > 0){
 				clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
-				clutch_time = calculate_Servo_ticks(clutch_angle, Savox); //Calculate the PWM signal for the new angle
+				clutch_time = calculate_Servo_ticks(clutch_angle, JXC); //Calculate the PWM signal for the new angle
 				clutch_period -= 1;
 				
 				if (clutch_period <= 0){ // if the launch process is finished re enable new process to be initiated
@@ -267,7 +267,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 		}else{
 			if(clutch_period > 0){
 				clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
-				clutch_time = calculate_Servo_ticks(clutch_angle, Savox); //Calculate the PWM signal for the new angle
+				clutch_time = calculate_Servo_ticks(clutch_angle, JXC); //Calculate the PWM signal for the new angle
 				clutch_period -= 1;
 			}
 		}
@@ -275,7 +275,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 	}else{//Use standard Routine if no Launch control is desired
 		if(clutch_period > 0){
 			clutch_angle = clutch_angle-pitch; //Get the new angle by subtracting the released angle per tick
-			clutch_time = calculate_Servo_ticks(clutch_angle, Savox); //Calculate the PWM signal for the new angle
+			clutch_time = calculate_Servo_ticks(clutch_angle, JXC); //Calculate the PWM signal for the new angle
 			clutch_period -= 1;
 			//LC_Launch == TRUE; //If we swicth LC active on during servo release we go into the release function of the LC Process resulting in the servo not stalling
 			FLATSHIFT_PORT &= ~(1<<FLATSHIFT_PIN); //Flat shift off
