@@ -33,24 +33,24 @@
 
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
-#define LOCKTIME_SHIFT 650 //500
+#define LOCKTIME_SHIFT 550 //500
 //time in ms before the flatshift and Antiblip is activated
-#define FLATSHIT_OFFSET 140 //220
+#define FLATSHIT_OFFSET 40 //220
 //time in ms before the Blipper is activated
 #define BLIPPER_OFFSET 80 //220
  //Time in ms before the antiblipper is activated
-#define ANTI_BLIP_OFFSET 70
+#define ANTI_BLIP_OFFSET 40
 
 //Time in ms for the servo to move to the shift up position and hold
-#define SHIFT_DURATION_UP (uint16_t) 300//350
+#define SHIFT_DURATION_UP (uint16_t) 250//350
 
-#define SHIFT_DURATION_UP_EINS (uint16_t) 300//350
+#define SHIFT_DURATION_UP_EINS (uint16_t) 250//350
 //Time in ms for the servo to move to the shift down position and hold
-#define SHIFT_DURATION_DOWN (uint16_t) 350 //350
+#define SHIFT_DURATION_DOWN (uint16_t) 270 //350
 //Time in ms for the servo to move back to the middle position and hold
-#define SHIFT_DURATION_MID (uint16_t) 300 //300
+#define SHIFT_DURATION_MID (uint16_t) 250 //300
 //Time in ms for the servo to move to the shift Neutral position and hold
-#define SHIFT_DURATION_NEUTRAL (uint16_t) 350 //300
+#define SHIFT_DURATION_NEUTRAL (uint16_t) 250 //300
 
 //offset for the exact shift position in ticks
 

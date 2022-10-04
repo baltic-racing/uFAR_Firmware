@@ -11,13 +11,13 @@
 #ifndef FAN_CONTROL_H_
 #define FAN_CONTROL_H_
 
-#define FAN1_DDR	DDRE
-#define FAN1_PORT	PORTE
-#define FAN1_PIN	PE3
+#define FAN1_DDR	DDRB
+#define FAN1_PORT	PORTB
+#define FAN1_PIN	PB0
 
-#define FAN2_DDR	DDRE
-#define FAN2_PORT	PORTE
-#define FAN2_PIN	PE4
+#define FAN2_DDR	DDRB
+#define FAN2_PORT	PORTB
+#define FAN2_PIN	PB1
 #define FAN_MIN		20 //26
 #define CLT_MAX		120 //105
 #define CLT_MIN		80
