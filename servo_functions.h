@@ -27,7 +27,7 @@
 //Shifting servo config
 #define SERVO_MAXANGLE 120 //°
 #define GEAR_SERVO_MIDDLE_ANGLE 70 //75 TY20
-#define GEAR_SERVO_SHIFT_UP_ANGLE 65 //65 TY20
+#define GEAR_SERVO_SHIFT_UP_ANGLE 80 //65 TY20
 #define GEAR_SERVO_SHIFT_DOWN_ANGLE 65 //65 TY20
 #define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 65 //65 TY20 
 
@@ -37,13 +37,13 @@
 
 #define SHIFT_DEG_OFFSET 0
 //this locktime is to prevent another shifting action before this set time in ms expires
-#define LOCKTIME_SHIFT 400 //500
+#define LOCKTIME_SHIFT 400 //400
 //time in ms before the flatshift and Antiblip is activated
-#define FLATSHIT_OFFSET 150 //220
+#define FLATSHIT_OFFSET 40 //150
 //time in ms before the Blipper is activated
-#define BLIPPER_OFFSET 80 //220
+#define BLIPPER_OFFSET 80 //80
  //Time in ms before the antiblipper is activated
-#define ANTI_BLIP_OFFSET 60
+#define ANTI_BLIP_OFFSET 40 //60
 
 //Time in ms for the servo to move to the shift up position and hold
 #define SHIFT_DURATION_UP (uint16_t) 150		//Load: 260	//Idle: 250
@@ -59,9 +59,9 @@
 //offset for the exact shift position in ticks
 
 #define SHIFT_UP_RPM 9800
-#define SHIFT_UP_RPM_EINS 6500
+#define SHIFT_UP_RPM_EINS 8000
 #define AUTO_SHIFTLOCK_TIME 600
-#define TWOSTEP_RPM 5000
+#define TWOSTEP_RPM 6000
 
 #define UP 1
 #define DOWN 0

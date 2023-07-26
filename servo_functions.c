@@ -88,15 +88,15 @@ void calculate_general_ticks(void){
 
 void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t rpm, uint8_t LC_Active, double GPS_Speed){
 
-	if(LC_Active == TRUE && gear > 0 && Auto_shiftlock <= 0){
+	if(LC_Active == TRUE /*&& gear > 0*/ && Auto_shiftlock <= 0){
 		if (gear == 1 && GPS_Speed >= FIRST_GEAR_SHIFT_SPEED && rpm >= SHIFT_UP_RPM_EINS){//Special case for shift into 2. gear because of wheel spin we use GPS Speed to verify that we actually want to shift !! Switch to friont wheelspeed when datalogger is not in car
-			shift_up = TRUE;
-			gear_up_autmatic = TRUE;
+			//shift_up = TRUE;
+			//gear_up_autmatic = TRUE;
 			Auto_shiftlock = AUTO_SHIFTLOCK_TIME;
 		}
 		if (gear > 1 && rpm >= SHIFT_UP_RPM){
-			shift_up = TRUE;
-			gear_up_autmatic = TRUE;
+			//shift_up = TRUE;
+			//gear_up_autmatic = TRUE;
 			Auto_shiftlock = AUTO_SHIFTLOCK_TIME;
 
 		}
@@ -112,7 +112,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 		//set start timestamp
 		time_shift_started = sys_time;
 		//if shift up signal comes
-		if( shift_up && gear < 4 ){
+		if( shift_up && gear < 5 ){
 			shift_locktime = LOCKTIME_SHIFT;
 			shiftlock = TRUE;
 			shift = 0;
@@ -235,7 +235,7 @@ void clutch_control(uint8_t clutch, uint8_t clutch_speed, uint8_t gear, uint8_t 
 	}
 	
 	if(LC_Active==TRUE && clutch==FALSE){//Use LC Method if desired
-		if (BP >= BP_MIN && gear == 1 && LC_Ready != TRUE && clutch_period > 0){//Only release servo tho slip position when car is hold with brakes, we are in the right gear & the driver is at least pushing half the throttle
+		if (BP >= BP_MIN /*&& gear == 1*/ && LC_Ready != TRUE && clutch_period > 0){//Only release servo tho slip position when car is hold with brakes, we are in the right gear & the driver is at least pushing half the throttle
 			
 			FLATSHIFT_PORT |= (1<<FLATSHIFT_PIN); //Flat shift on
 			Launch_Flatshift_Active = TRUE;
