@@ -112,7 +112,7 @@ void shift_control(uint8_t shift_up, uint8_t shift_down, uint8_t gear, uint16_t 
 		//set start timestamp
 		time_shift_started = sys_time;
 		//if shift up signal comes
-		if( shift_up && gear < 5 ){
+		if( shift_up && gear < 4 ){
 			shift_locktime = LOCKTIME_SHIFT;
 			shiftlock = TRUE;
 			shift = 0;

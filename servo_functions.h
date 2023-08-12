@@ -27,7 +27,7 @@
 //Shifting servo config
 #define SERVO_MAXANGLE 120 //°
 #define GEAR_SERVO_MIDDLE_ANGLE 70 //75 TY20
-#define GEAR_SERVO_SHIFT_UP_ANGLE 80 //65 TY20
+#define GEAR_SERVO_SHIFT_UP_ANGLE 80 //80 65 TY20
 #define GEAR_SERVO_SHIFT_DOWN_ANGLE 65 //65 TY20
 #define GEAR_SERVO_SHIFT_NEUTRAL_ANGLE 65 //65 TY20 
 
@@ -39,20 +39,20 @@
 //this locktime is to prevent another shifting action before this set time in ms expires
 #define LOCKTIME_SHIFT 400 //400
 //time in ms before the flatshift and Antiblip is activated
-#define FLATSHIT_OFFSET 40 //150
+#define FLATSHIT_OFFSET 100 //100
 //time in ms before the Blipper is activated
-#define BLIPPER_OFFSET 80 //80
+#define BLIPPER_OFFSET 20 //40
  //Time in ms before the antiblipper is activated
-#define ANTI_BLIP_OFFSET 40 //60
+#define ANTI_BLIP_OFFSET 120 //100
 
 //Time in ms for the servo to move to the shift up position and hold
-#define SHIFT_DURATION_UP (uint16_t) 150		//Load: 260	//Idle: 250
+#define SHIFT_DURATION_UP (uint16_t) 180	// 120 //Load: 260	//Idle: 250
 
 #define SHIFT_DURATION_UP_EINS (uint16_t) SHIFT_DURATION_UP	//Load: 250	//Idle: 250
 //Time in ms for the servo to move to the shift down position and hold
-#define SHIFT_DURATION_DOWN (uint16_t) 150		//Load: 250	//Idle: 200
+#define SHIFT_DURATION_DOWN (uint16_t) 200		// 200 //Load: 250	//Idle: 200
 //Time in ms for the servo to move back to the middle position and hold
-#define SHIFT_DURATION_MID (uint16_t) 150		//100	/*200*/
+#define SHIFT_DURATION_MID (uint16_t) 100		// 100 //Old 200
 //Time in ms for the servo to move to the shift Neutral position and hold
 #define SHIFT_DURATION_NEUTRAL (uint16_t) 100	//100	/*300*/
 
